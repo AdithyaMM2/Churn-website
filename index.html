@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Churn Prediction on AWS</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121933;
+      --panel-2: #192246;
+      --text: #eef2ff;
+      --muted: #b8c1ec;
+      --accent: #6ea8fe;
+      --accent-2: #7ee787;
+      --danger: #ff7b72;
+      --border: rgba(255,255,255,0.12);
+      --shadow: 0 10px 30px rgba(0,0,0,0.3);
+      --max: 1100px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #08101f 0%, #0f1731 100%);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .container {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(10px);
+      background: rgba(8, 16, 31, 0.75);
+      border-bottom: 1px solid var(--border);
+      z-index: 50;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 0;
+    }
+
+    .brand {
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .nav-links a, .btn {
+      color: var(--text);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      padding: 10px 14px;
+      border-radius: 14px;
+      transition: 0.2s ease;
+    }
+
+    .nav-links a:hover, .btn:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.08);
+    }
+
+    .hero {
+      padding: 72px 0 40px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(110, 168, 254, 0.14);
+      color: var(--accent);
+      border: 1px solid rgba(110, 168, 254, 0.35);
+      margin-bottom: 12px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    h1, h2, h3 { line-height: 1.2; margin: 0 0 12px; }
+    h1 { font-size: clamp(32px, 5vw, 52px); }
+    h2 { font-size: clamp(24px, 3.5vw, 34px); margin-bottom: 18px; }
+    p { color: var(--muted); margin: 0 0 14px; }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #071224;
+      border-color: transparent;
+      font-weight: 700;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .stat {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .stat .kpi {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    section {
+      padding: 22px 0;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .pill {
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 14px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 14px;
+      align-items: start;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .step-num {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: rgba(126,231,135,0.12);
+      color: var(--accent-2);
+      font-weight: 700;
+      border: 1px solid rgba(126,231,135,0.32);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+    }
+
+    th, td {
+      padding: 14px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+
+    th {
+      color: var(--text);
+      background: rgba(255,255,255,0.06);
+    }
+
+    tr:last-child td { border-bottom: none; }
+    .winner { color: var(--accent-2); font-weight: 700; }
+    .warning { color: var(--danger); font-weight: 700; }
+
+    footer {
+      padding: 32px 0 50px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .hero-grid, .grid-3 { grid-template-columns: 1fr; }
+      .stat-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .stat-grid { grid-template-columns: 1fr; }
+      .step { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <nav>
+        <div class="brand">Customer Churn Prediction on AWS</div>
+        <div class="nav-links">
+          <a href="#overview">Overview</a>
+          <a href="#architecture">Architecture</a>
+          <a href="#results">Results</a>
+          <a href="#stack">Stack</a>
+          <a href="#contact">Links</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="overview">
+      <div class="container hero-grid">
+        <div class="card">
+          <div class="tag">CS5024 AWS AI Ecosystem Project</div>
+          <h1>Customer Churn Prediction using Amazon SageMaker</h1>
+          <p>
+            This project implements an end-to-end machine learning workflow on AWS for telecom customer churn prediction.
+            The solution covers preprocessing, baseline modelling, managed XGBoost training in SageMaker, hyperparameter tuning,
+            S3 artifact storage, and final evaluation on a held-out test set.
+          </p>
+          <p>
+            The final outcome was intentionally reported honestly: the cloud-trained XGBoost pipeline worked,
+            but Logistic Regression remained the strongest overall model on the test set.
+          </p>
+          <div class="hero-actions">
+            <a class="btn primary" href="#results">View Results</a>
+            <a class="btn" href="#architecture">See Architecture</a>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Quick Project Facts</h3>
+          <div class="stat-grid">
+            <div class="stat">
+              <div class="kpi">70 / 15 / 15</div>
+              <p>Train / validation / test split</p>
+            </div>
+            <div class="stat">
+              <div class="kpi">3</div>
+              <p>Models compared</p>
+            </div>
+            <div class="stat">
+              <div class="kpi">0.8226</div>
+              <p>Best ROC-AUC (Logistic Regression)</p>
+            </div>
+            <div class="stat">
+              <div class="kpi">AWS</div>
+              <p>SageMaker, S3, IAM, CloudWatch</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <div class="container">
+        <div class="card">
+          <h2>AWS Architecture</h2>
+          <p>
+            The workflow uses an Amazon SageMaker AI JupyterLab Space for experimentation, Amazon S3 for dataset and artifact storage,
+            SageMaker managed training jobs for XGBoost, hyperparameter tuning jobs for optimization, and CloudWatch for job logs.
+            A Batch Transform attempt was made but failed because of an account-level service quota limit.
+          </p>
+          <div class="timeline">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div>
+                <h3>Prepare and preprocess data in SageMaker notebook</h3>
+                <p>Load the churn dataset, clean TotalCharges, remove identifier columns, encode categorical variables, and split data.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div>
+                <h3>Upload CSV files to Amazon S3</h3>
+                <p>Store train, validation, and test artifacts in S3 for managed training workflows.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div>
+                <h3>Train and tune XGBoost in SageMaker</h3>
+                <p>Launch managed training and hyperparameter tuning jobs using SageMaker’s built-in XGBoost algorithm.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">4</div>
+              <div>
+                <h3>Evaluate model artifacts</h3>
+                <p>Download trained artifacts from S3, score the held-out test set in the notebook, and compare against the baseline model.</p>
+              </div>
+            </div>
+          </div>
+          <div class="pill-list">
+            <div class="pill">Amazon SageMaker AI</div>
+            <div class="pill">Amazon S3</div>
+            <div class="pill">SageMaker Training Jobs</div>
+            <div class="pill">Hyperparameter Tuning</div>
+            <div class="pill">IAM Execution Role</div>
+            <div class="pill">Amazon CloudWatch</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="results">
+      <div class="container">
+        <div class="card">
+          <h2>Final Results</h2>
+          <p>
+            The website reports the final results exactly as observed. The cloud-based pipeline succeeded technically,
+            but the strongest model overall was still the simpler Logistic Regression baseline.
+          </p>
+          <table>
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>Accuracy</th>
+                <th>Precision</th>
+                <th>Recall</th>
+                <th>F1 Score</th>
+                <th>ROC-AUC</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="winner">Logistic Regression</td>
+                <td>0.787678</td>
+                <td>0.616667</td>
+                <td>0.528571</td>
+                <td>0.569231</td>
+                <td>0.822638</td>
+              </tr>
+              <tr>
+                <td>SageMaker XGBoost (Untuned)</td>
+                <td>0.763033</td>
+                <td>0.583333</td>
+                <td>0.375000</td>
+                <td>0.456522</td>
+                <td>0.728138</td>
+              </tr>
+              <tr>
+                <td>SageMaker XGBoost (Tuned)</td>
+                <td>0.772512</td>
+                <td>0.717391</td>
+                <td>0.235714</td>
+                <td>0.354839</td>
+                <td>0.782237</td>
+              </tr>
+            </tbody>
+          </table>
+          <p style="margin-top:16px;">
+            <span class="winner">Selected final model:</span> Logistic Regression.<br>
+            <span class="warning">Implementation challenge:</span> Batch Transform could not be completed due to an account-level service quota limit for <code>ml.m5.large</code> transform jobs.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="stack">
+      <div class="container grid-3">
+        <div class="card">
+          <h3>What was built</h3>
+          <p>Notebook-based preprocessing, baseline model training, SageMaker XGBoost training, tuning, artifact-based evaluation, and architecture documentation.</p>
+        </div>
+        <div class="card">
+          <h3>Why AWS was used</h3>
+          <p>To demonstrate a managed AI/ML ecosystem with cloud storage, managed training jobs, tuning jobs, logging, and reusable model artifacts.</p>
+        </div>
+        <div class="card">
+          <h3>What this site is for</h3>
+          <p>A project showcase page for GitHub and AWS hosting. It presents the work clearly without pretending the website itself is the ML system.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <div class="container">
+        <div class="card">
+          <h2>Project Links</h2>
+          <p>Replace these placeholders before publishing.</p>
+          <div class="pill-list">
+            <a class="btn" href="#">GitHub Repository</a>
+            <a class="btn" href="#">Project Report PDF</a>
+            <a class="btn" href="#">LinkedIn Post</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>Built as a CS5024 AI ecosystem project using Amazon SageMaker, Amazon S3, hyperparameter tuning, and cloud-based ML workflow design.</p>
+    </div>
+  </footer>
+</body>
+</html>
