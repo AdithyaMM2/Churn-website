@@ -6,17 +6,23 @@
   <title>Customer Churn Prediction on AWS</title>
   <style>
     :root {
-      --bg: #0b1020;
-      --panel: #121933;
-      --panel-2: #192246;
-      --text: #eef2ff;
-      --muted: #b8c1ec;
-      --accent: #6ea8fe;
-      --accent-2: #7ee787;
-      --danger: #ff7b72;
-      --border: rgba(255,255,255,0.12);
-      --shadow: 0 10px 30px rgba(0,0,0,0.3);
-      --max: 1100px;
+      --bg-1: #081120;
+      --bg-2: #0e1a31;
+      --panel: rgba(10, 19, 34, 0.88);
+      --panel-2: rgba(14, 26, 49, 0.96);
+      --text: #eef4ff;
+      --muted: #bcc9e4;
+      --subtle: #92a4c8;
+      --line: rgba(255,255,255,0.12);
+      --blue: #7db5ff;
+      --blue-2: #a6cbff;
+      --green: #86e7c5;
+      --green-2: #b7ffe8;
+      --gold: #ffd166;
+      --red: #ff8d87;
+      --shadow: 0 18px 48px rgba(0,0,0,0.30);
+      --radius: 24px;
+      --max: 1240px;
     }
 
     * { box-sizing: border-box; }
@@ -24,9 +30,12 @@
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
-      background: linear-gradient(180deg, #08101f 0%, #0f1731 100%);
       color: var(--text);
-      line-height: 1.6;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(125,181,255,0.18), transparent 22%),
+        radial-gradient(circle at 88% 10%, rgba(134,231,197,0.10), transparent 20%),
+        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+      line-height: 1.58;
     }
 
     .container {
@@ -37,10 +46,10 @@
     header {
       position: sticky;
       top: 0;
-      backdrop-filter: blur(10px);
-      background: rgba(8, 16, 31, 0.75);
-      border-bottom: 1px solid var(--border);
-      z-index: 50;
+      z-index: 100;
+      background: rgba(8, 17, 32, 0.72);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
     }
 
     nav {
@@ -52,45 +61,79 @@
     }
 
     .brand {
+      font-size: 18px;
       font-weight: 700;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
     }
 
     .nav-links {
       display: flex;
-      gap: 14px;
+      gap: 12px;
       flex-wrap: wrap;
     }
 
-    .nav-links a, .btn {
-      color: var(--text);
+    .nav-links a,
+    .btn,
+    .tab-btn,
+    .chip {
       text-decoration: none;
-      border: 1px solid var(--border);
+      color: var(--text);
+      border: 1px solid var(--line);
       background: rgba(255,255,255,0.04);
       padding: 10px 14px;
-      border-radius: 14px;
-      transition: 0.2s ease;
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+      cursor: pointer;
     }
 
-    .nav-links a:hover, .btn:hover {
+    .nav-links a:hover,
+    .btn:hover,
+    .tab-btn:hover,
+    .chip:hover {
       transform: translateY(-1px);
       background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.18);
     }
 
-    .hero {
-      padding: 72px 0 40px;
+    .btn.primary {
+      background: linear-gradient(135deg, var(--blue), var(--blue-2));
+      color: #07111f;
+      border-color: transparent;
+      font-weight: 700;
     }
 
-    .hero-grid {
+    main section { padding: 30px 0; }
+
+    .hero { padding-top: 54px; }
+
+    .hero-grid,
+    .grid-2,
+    .compare-grid,
+    .sim-grid,
+    .model-panel.active {
       display: grid;
       grid-template-columns: 1.2fr 0.8fr;
-      gap: 24px;
+      gap: 22px;
+    }
+
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+    .compare-grid { grid-template-columns: 1fr 1fr; }
+    .sim-grid { grid-template-columns: 1.05fr 0.95fr; }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
     }
 
     .card {
       background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
-      border: 1px solid var(--border);
-      border-radius: 24px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding: 24px;
     }
@@ -99,147 +142,251 @@
       display: inline-block;
       padding: 8px 12px;
       border-radius: 999px;
-      background: rgba(110, 168, 254, 0.14);
-      color: var(--accent);
-      border: 1px solid rgba(110, 168, 254, 0.35);
-      margin-bottom: 12px;
-      font-size: 14px;
+      border: 1px solid rgba(125,181,255,0.32);
+      background: rgba(125,181,255,0.12);
+      color: var(--blue);
+      font-size: 13px;
       font-weight: 700;
+      margin-bottom: 12px;
     }
 
-    h1, h2, h3 { line-height: 1.2; margin: 0 0 12px; }
-    h1 { font-size: clamp(32px, 5vw, 52px); }
-    h2 { font-size: clamp(24px, 3.5vw, 34px); margin-bottom: 18px; }
-    p { color: var(--muted); margin: 0 0 14px; }
+    h1, h2, h3 { margin: 0 0 12px; line-height: 1.12; }
+    h1 { font-size: clamp(34px, 5vw, 56px); }
+    h2 { font-size: clamp(24px, 3vw, 34px); }
+    h3 { font-size: 20px; }
 
-    .hero-actions {
+    p { margin: 0 0 14px; color: var(--muted); }
+
+    .hero-actions,
+    .button-row,
+    .chip-row,
+    .tab-bar {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
       margin-top: 18px;
     }
 
-    .btn.primary {
-      background: var(--accent);
-      color: #071224;
-      border-color: transparent;
-      font-weight: 700;
-    }
-
-    .stat-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-      margin-top: 8px;
-    }
-
-    .stat {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 18px;
-    }
-
-    .stat .kpi {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    section {
-      padding: 22px 0;
-    }
-
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-    }
-
-    .pill-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .pill {
-      padding: 10px 12px;
+    .chip {
+      padding: 10px 14px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      color: var(--text);
       font-size: 14px;
     }
 
-    .timeline {
+    .stats,
+    .metric-grid,
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .stat,
+    .metric,
+    .callout,
+    .insight,
+    .step,
+    .risk-box {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .stat-value,
+    .risk-score {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .risk-score { font-size: 42px; }
+
+    .subgrid,
+    .timeline,
+    .bars,
+    .insight-list,
+    .sim-output {
       display: grid;
       gap: 14px;
     }
 
     .step {
       display: grid;
-      grid-template-columns: 48px 1fr;
-      gap: 14px;
-      align-items: start;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 16px;
+      grid-template-columns: 52px 1fr;
+      gap: 16px;
     }
 
     .step-num {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
       display: grid;
       place-items: center;
-      background: rgba(126,231,135,0.12);
-      color: var(--accent-2);
       font-weight: 700;
-      border: 1px solid rgba(126,231,135,0.32);
+      color: #072132;
+      background: linear-gradient(135deg, var(--green), var(--green-2));
+    }
+
+    .tab-btn.active {
+      background: rgba(125,181,255,0.16);
+      border-color: rgba(125,181,255,0.38);
+    }
+
+    .model-panel { display: none; gap: 18px; }
+    .model-panel.active { grid-template-columns: 1fr 1fr; }
+
+    .metric strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 24px;
+      color: var(--text);
+    }
+
+    .bar-row { display: grid; gap: 6px; }
+    .bar-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .bar-track,
+    .progress {
+      width: 100%;
+      height: 12px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .bar-fill,
+    .progress > div {
+      height: 100%;
+      border-radius: 999px;
+    }
+
+    .bar-fill {
+      background: linear-gradient(90deg, var(--blue), var(--green));
+    }
+
+    .progress > div {
+      width: 0%;
+      background: linear-gradient(90deg, var(--gold), var(--red));
+      transition: width 0.25s ease;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
       overflow: hidden;
-      border-radius: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
       background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
     }
 
     th, td {
       padding: 14px 12px;
       text-align: left;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--line);
       font-size: 14px;
     }
 
     th {
-      color: var(--text);
       background: rgba(255,255,255,0.06);
+      color: var(--text);
     }
 
     tr:last-child td { border-bottom: none; }
-    .winner { color: var(--accent-2); font-weight: 700; }
-    .warning { color: var(--danger); font-weight: 700; }
 
-    footer {
-      padding: 32px 0 50px;
+    .winner { color: var(--green); font-weight: 700; }
+    .warning { color: var(--red); font-weight: 700; }
+    .muted { color: var(--subtle); }
+
+    .image-frame {
+      overflow: hidden;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .image-frame img {
+      width: 100%;
+      display: block;
+    }
+
+    .portfolio-value {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .portfolio-item {
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
       color: var(--muted);
       font-size: 14px;
     }
 
-    @media (max-width: 900px) {
-      .hero-grid, .grid-3 { grid-template-columns: 1fr; }
-      .stat-grid { grid-template-columns: 1fr 1fr; }
+    label {
+      display: grid;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text);
     }
 
-    @media (max-width: 640px) {
+    select,
+    input[type="range"] {
+      width: 100%;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .insight {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    footer {
+      padding: 34px 0 60px;
+      color: var(--subtle);
+      font-size: 14px;
+    }
+
+    dialog {
+      width: min(95vw, 1200px);
+      border: none;
+      border-radius: 20px;
+      padding: 0;
+      background: #09111e;
+    }
+
+    @media (max-width: 1100px) {
+      .hero-grid,
+      .grid-2,
+      .compare-grid,
+      .sim-grid,
+      .model-panel.active,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
       .nav-links { display: none; }
-      .stat-grid { grid-template-columns: 1fr; }
+      .stats,
+      .metric-grid,
+      .field-grid { grid-template-columns: 1fr; }
       .step { grid-template-columns: 1fr; }
+      .step-num { width: 44px; height: 44px; }
     }
   </style>
 </head>
@@ -251,9 +398,9 @@
         <div class="nav-links">
           <a href="#overview">Overview</a>
           <a href="#architecture">Architecture</a>
-          <a href="#results">Results</a>
-          <a href="#stack">Stack</a>
-          <a href="#contact">Links</a>
+          <a href="#lab">Model Lab</a>
+          <a href="#simulator">Simulator</a>
+          <a href="#links">Links</a>
         </div>
       </nav>
     </div>
@@ -266,189 +413,362 @@
           <div class="tag">CS5024 AWS AI Ecosystem Project</div>
           <h1>Customer Churn Prediction using Amazon SageMaker</h1>
           <p>
-            This project implements an end-to-end machine learning workflow on AWS for telecom customer churn prediction.
-            The solution covers preprocessing, baseline modelling, managed XGBoost training in SageMaker, hyperparameter tuning,
-            S3 artifact storage, and final evaluation on a held-out test set.
+            This project implements an end-to-end machine learning workflow on AWS for telecom customer churn prediction. The solution combines preprocessing, baseline modelling,
+            managed XGBoost training in SageMaker, hyperparameter tuning, artifact-based evaluation, and a public project site delivered through GitHub and AWS Amplify.
           </p>
           <p>
-            The final outcome was intentionally reported honestly: the cloud-trained XGBoost pipeline worked,
-            but Logistic Regression remained the strongest overall model on the test set.
+            The project is deliberately honest: the cloud pipeline succeeded, but the strongest overall model on the held-out test set remained Logistic Regression.
+            That makes the work more credible, not less.
           </p>
           <div class="hero-actions">
-            <a class="btn primary" href="#results">View Results</a>
+            <a class="btn primary" href="#lab">Explore Results</a>
             <a class="btn" href="#architecture">See Architecture</a>
+          </div>
+          <div class="chip-row">
+            <div class="chip">Amazon SageMaker AI</div>
+            <div class="chip">Amazon S3</div>
+            <div class="chip">CloudWatch</div>
+            <div class="chip">AWS Amplify</div>
+            <div class="chip">GitHub</div>
           </div>
         </div>
         <div class="card">
           <h3>Quick Project Facts</h3>
-          <div class="stat-grid">
+          <div class="stats">
             <div class="stat">
-              <div class="kpi">70 / 15 / 15</div>
-              <p>Train / validation / test split</p>
+              <div class="stat-value">7032</div>
+              <p>Final usable rows after cleaning</p>
             </div>
             <div class="stat">
-              <div class="kpi">3</div>
-              <p>Models compared</p>
+              <div class="stat-value">30</div>
+              <p>Encoded feature columns</p>
             </div>
             <div class="stat">
-              <div class="kpi">0.8226</div>
+              <div class="stat-value">0.8226</div>
               <p>Best ROC-AUC (Logistic Regression)</p>
             </div>
             <div class="stat">
-              <div class="kpi">AWS</div>
-              <p>SageMaker, S3, IAM, CloudWatch</p>
+              <div class="stat-value">3</div>
+              <p>Models benchmarked</p>
             </div>
+          </div>
+          <div class="callout" style="margin-top:16px;">
+            <strong class="winner">Selected final model</strong>
+            <p style="margin-top:8px; margin-bottom:0;">Logistic Regression was retained as the best overall model because it produced the strongest balance of recall, F1 score, and ROC-AUC.</p>
           </div>
         </div>
       </div>
     </section>
 
     <section id="architecture">
-      <div class="container">
+      <div class="container grid-2">
         <div class="card">
           <h2>AWS Architecture</h2>
           <p>
-            The workflow uses an Amazon SageMaker AI JupyterLab Space for experimentation, Amazon S3 for dataset and artifact storage,
-            SageMaker managed training jobs for XGBoost, hyperparameter tuning jobs for optimization, and CloudWatch for job logs.
-            A Batch Transform attempt was made but failed because of an account-level service quota limit.
+            The ML workflow used Amazon SageMaker AI JupyterLab for experimentation, Amazon S3 for storage, managed SageMaker XGBoost training and tuning jobs,
+            CloudWatch for job logs, and IAM for access control. In a separate delivery layer, GitHub and AWS Amplify were used to publish this project website.
           </p>
           <div class="timeline">
             <div class="step">
               <div class="step-num">1</div>
               <div>
-                <h3>Prepare and preprocess data in SageMaker notebook</h3>
-                <p>Load the churn dataset, clean TotalCharges, remove identifier columns, encode categorical variables, and split data.</p>
+                <h3>Prepare data in SageMaker notebook</h3>
+                <p>Load the churn dataset, clean TotalCharges, remove identifiers, encode categorical variables, and split the data into train, validation, and test sets.</p>
               </div>
             </div>
             <div class="step">
               <div class="step-num">2</div>
               <div>
-                <h3>Upload CSV files to Amazon S3</h3>
-                <p>Store train, validation, and test artifacts in S3 for managed training workflows.</p>
+                <h3>Upload prepared CSV files to Amazon S3</h3>
+                <p>Store train, validation, and test artifacts in S3 so that managed SageMaker jobs can consume them and write model outputs back to the same storage layer.</p>
               </div>
             </div>
             <div class="step">
               <div class="step-num">3</div>
               <div>
                 <h3>Train and tune XGBoost in SageMaker</h3>
-                <p>Launch managed training and hyperparameter tuning jobs using SageMaker’s built-in XGBoost algorithm.</p>
+                <p>Launch built-in XGBoost training and hyperparameter tuning jobs, monitor logs with CloudWatch, and store trained artifacts in S3.</p>
               </div>
             </div>
             <div class="step">
               <div class="step-num">4</div>
               <div>
-                <h3>Evaluate model artifacts</h3>
-                <p>Download trained artifacts from S3, score the held-out test set in the notebook, and compare against the baseline model.</p>
+                <h3>Evaluate artifacts and compare models</h3>
+                <p>Load model artifacts back into the notebook, score the held-out test set, and compare cloud-trained models against the baseline Logistic Regression model.</p>
               </div>
             </div>
           </div>
-          <div class="pill-list">
-            <div class="pill">Amazon SageMaker AI</div>
-            <div class="pill">Amazon S3</div>
-            <div class="pill">SageMaker Training Jobs</div>
-            <div class="pill">Hyperparameter Tuning</div>
-            <div class="pill">IAM Execution Role</div>
-            <div class="pill">Amazon CloudWatch</div>
+        </div>
+        <div class="card">
+          <h3>Architecture diagram</h3>
+          <div class="image-frame">
+            <img src="assets/ARCHITECTURE_DIAGRAM.png" alt="AWS architecture diagram" />
+          </div>
+          <div class="button-row">
+            <button class="btn" id="openArchitecture">Open full view</button>
+          </div>
+          <div class="compare-grid">
+            <div class="callout">
+              <strong>What worked</strong>
+              <p style="margin-top:8px; margin-bottom:0;">SageMaker notebook workflow, S3 uploads, XGBoost training, hyperparameter tuning, artifact retrieval, CloudWatch logging, GitHub version control, and Amplify deployment.</p>
+            </div>
+            <div class="callout">
+              <strong class="warning">Implementation constraint</strong>
+              <p style="margin-top:8px; margin-bottom:0;">Batch Transform could not be completed because the account had no quota available for <code>ml.m5.large</code> transform jobs.</p>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section id="results">
+    <section id="lab">
       <div class="container">
         <div class="card">
-          <h2>Final Results</h2>
+          <h2>Interactive Model Lab</h2>
           <p>
-            The website reports the final results exactly as observed. The cloud-based pipeline succeeded technically,
-            but the strongest model overall was still the simpler Logistic Regression baseline.
+            Switch between the three evaluated models to inspect the final test-set metrics. This turns the project from a static screenshot dump into a more transparent technical showcase.
           </p>
-          <table>
-            <thead>
-              <tr>
-                <th>Model</th>
-                <th>Accuracy</th>
-                <th>Precision</th>
-                <th>Recall</th>
-                <th>F1 Score</th>
-                <th>ROC-AUC</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="winner">Logistic Regression</td>
-                <td>0.787678</td>
-                <td>0.616667</td>
-                <td>0.528571</td>
-                <td>0.569231</td>
-                <td>0.822638</td>
-              </tr>
-              <tr>
-                <td>SageMaker XGBoost (Untuned)</td>
-                <td>0.763033</td>
-                <td>0.583333</td>
-                <td>0.375000</td>
-                <td>0.456522</td>
-                <td>0.728138</td>
-              </tr>
-              <tr>
-                <td>SageMaker XGBoost (Tuned)</td>
-                <td>0.772512</td>
-                <td>0.717391</td>
-                <td>0.235714</td>
-                <td>0.354839</td>
-                <td>0.782237</td>
-              </tr>
-            </tbody>
-          </table>
-          <div style="margin-top: 24px;">
-            <h3>Architecture Diagram</h3>
-            <img src="assets/ARCHITECTURE_DIAGRAM.jpg" alt="AWS architecture diagram" style="width:100%; border-radius:16px; border:1px solid rgba(255,255,255,0.12); margin-top:10px;" />
+          <div class="tab-bar">
+            <button class="tab-btn active" data-model="lr">Logistic Regression</button>
+            <button class="tab-btn" data-model="xgb">SageMaker XGBoost (Untuned)</button>
+            <button class="tab-btn" data-model="tuned">SageMaker XGBoost (Tuned)</button>
           </div>
 
-          <div style="margin-top: 24px;">
-            <h3>Final Model Comparison</h3>
-            <img src="assets/19_final_model_comparison.png" alt="Final model comparison table" style="width:100%; border-radius:16px; border:1px solid rgba(255,255,255,0.12); margin-top:10px;" />
+          <div class="model-panel active" id="panel-lr">
+            <div class="subgrid">
+              <div class="metric-grid">
+                <div class="metric"><span>Accuracy</span><strong>0.7877</strong></div>
+                <div class="metric"><span>Precision</span><strong>0.6167</strong></div>
+                <div class="metric"><span>Recall</span><strong>0.5286</strong></div>
+                <div class="metric"><span>F1 Score</span><strong>0.5692</strong></div>
+                <div class="metric"><span>ROC-AUC</span><strong>0.8226</strong></div>
+                <div class="metric"><span>Verdict</span><strong class="winner">Best overall</strong></div>
+              </div>
+              <div class="callout">
+                <strong>Interpretation</strong>
+                <p style="margin-top:8px; margin-bottom:0;">This baseline model produced the strongest balance between recall, F1 score, and ROC-AUC. For churn prediction, that balance is more meaningful than chasing a single metric in isolation.</p>
+              </div>
+            </div>
+            <div class="bars">
+              <div class="bar-row"><div class="bar-label"><span>Accuracy</span><span>0.7877</span></div><div class="bar-track"><div class="bar-fill" style="width:78.77%"></div></div></div>
+              <div class="bar-row"><div class="bar-label"><span>Precision</span><span>0.6167</span></div><div class="bar-track"><div class="bar-fill" style="width:61.67%"></div></div></div>
+              <div class="bar-row"><div class="bar-label"><span>Recall</span><span>0.5286</span></div><div class="bar-track"><div class="bar-fill" style="width:52.86%"></div></div></div>
+              <div class="bar-row"><div class="bar-label"><span>F1 Score</span><span>0.5692</span></div><div class="bar-track"><div class="bar-fill" style="width:56.92%"></div></div></div>
+              <div class="bar-row"><div class="bar-label"><span>ROC-AUC</span><span>0.8226</span></div><div class="bar-track"><div class="bar-fill" style="width:82.26%"></div></div></div>
+            </div>
           </div>
 
-          <div style="margin-top: 24px;">
-            <h3>Confusion Matrix</h3>
-            <img src="assets/09_confusion_matrix_logistic_regression.png" alt="Confusion matrix of Logistic Regression" style="width:100%; border-radius:16px; border:1px solid rgba(255,255,255,0.12); margin-top:10px;" />
+          <div class="model-panel" id="panel-xgb">
+            <div class="subgrid">
+              <div class="metric-grid">
+                <div class="metric"><span>Accuracy</span><strong>0.7630</strong></div>
+                <div class="metric"><span>Precision</span><strong>0.5833</strong></div>
+                <div class="metric"><span>Recall</span><strong>0.3750</strong></div>
+                <div class="metric"><span>F1 Score</span><strong>0.4565</strong></div>
+                <div class="metric"><span>ROC-AUC</span><strong>0.7281</strong></div>
+                <div class="metric"><span>Verdict</span><strong>Cloud baseline</strong></div>
+              </div>
+              <div class="callout">
+                <strong>Interpretation</strong>
+                <p style="margin-top:8px; margin-bottom:0;">The SageMaker training workflow worked correctly, but the untuned XGBoost model underperformed the simpler Logistic Regression baseline on the held-out test set.</p>
+              </div>
+            </div>
+            <div class="bars">
+              <div class="bar-row"><div class="bar-label"><span>Accuracy</span><span>0.7630</span></div><div class="bar-track"><div class="bar-fill" style="width:76.30%"></div></div></div>
+              <div class="bar-row"><div class="bar-label"><span>Precision</span><span>0.5833</span></div><div class="bar-track"><div class="bar-fill" style="width:58.33%"></div></div></div>
+              <div class="bar-row"><div class="bar-label"><span>Recall</span><span>0.3750</span></div><div class="bar-track"><div class="bar-fill" style="width:37.50%"></div></div></div>
+              <div class="bar-row"><div class="bar-label"><span>F1 Score</span><span>0.4565</span></div><div class="bar-track"><div class="bar-fill" style="width:45.65%"></div></div></div>
+              <div class="bar-row"><div class="bar-label"><span>ROC-AUC</span><span>0.7281</span></div><div class="bar-track"><div class="bar-fill" style="width:72.81%"></div></div></div>
+            </div>
           </div>
-          <p style="margin-top:16px;">
-            <span class="winner">Selected final model:</span> Logistic Regression.<br>
-            <span class="warning">Implementation challenge:</span> Batch Transform could not be completed due to an account-level service quota limit for <code>ml.m5.large</code> transform jobs.
-          </p>
+
+          <div class="model-panel" id="panel-tuned">
+            <div class="subgrid">
+              <div class="metric-grid">
+                <div class="metric"><span>Accuracy</span><strong>0.7725</strong></div>
+                <div class="metric"><span>Precision</span><strong>0.7174</strong></div>
+                <div class="metric"><span>Recall</span><strong>0.2357</strong></div>
+                <div class="metric"><span>F1 Score</span><strong>0.3548</strong></div>
+                <div class="metric"><span>ROC-AUC</span><strong>0.7822</strong></div>
+                <div class="metric"><span>Verdict</span><strong>Higher precision, weak recall</strong></div>
+              </div>
+              <div class="callout">
+                <strong>Interpretation</strong>
+                <p style="margin-top:8px; margin-bottom:0;">Tuning improved precision and ROC-AUC relative to untuned XGBoost, but recall dropped sharply. That trade-off made it weaker for a churn-retention use case.</p>
+              </div>
+            </div>
+            <div class="bars">
+              <div class="bar-row"><div class="bar-label"><span>Accuracy</span><span>0.7725</span></div><div class="bar-track"><div class="bar-fill" style="width:77.25%"></div></div></div>
+              <div class="bar-row"><div class="bar-label"><span>Precision</span><span>0.7174</span></div><div class="bar-track"><div class="bar-fill" style="width:71.74%"></div></div></div>
+              <div class="bar-row"><div class="bar-label"><span>Recall</span><span>0.2357</span></div><div class="bar-track"><div class="bar-fill" style="width:23.57%"></div></div></div>
+              <div class="bar-row"><div class="bar-label"><span>F1 Score</span><span>0.3548</span></div><div class="bar-track"><div class="bar-fill" style="width:35.48%"></div></div></div>
+              <div class="bar-row"><div class="bar-label"><span>ROC-AUC</span><span>0.7822</span></div><div class="bar-track"><div class="bar-fill" style="width:78.22%"></div></div></div>
+            </div>
+          </div>
+
+          <div style="margin-top:22px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Model</th>
+                  <th>Accuracy</th>
+                  <th>Precision</th>
+                  <th>Recall</th>
+                  <th>F1 Score</th>
+                  <th>ROC-AUC</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="winner">Logistic Regression</td>
+                  <td>0.787678</td>
+                  <td>0.616667</td>
+                  <td>0.528571</td>
+                  <td>0.569231</td>
+                  <td>0.822638</td>
+                </tr>
+                <tr>
+                  <td>SageMaker XGBoost (Untuned)</td>
+                  <td>0.763033</td>
+                  <td>0.583333</td>
+                  <td>0.375000</td>
+                  <td>0.456522</td>
+                  <td>0.728138</td>
+                </tr>
+                <tr>
+                  <td>SageMaker XGBoost (Tuned)</td>
+                  <td>0.772512</td>
+                  <td>0.717391</td>
+                  <td>0.235714</td>
+                  <td>0.354839</td>
+                  <td>0.782237</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
 
-    <section id="stack">
+    <section>
+      <div class="container grid-2">
+        <div class="card">
+          <h2>Project Visuals</h2>
+          <p>These visuals are taken directly from the final project outputs and documentation assets.</p>
+          <div class="subgrid">
+  <div class="image-frame">
+    <img src="assets/19_final_model_comparison.png" alt="Final model comparison" />
+  </div>
+  <div class="image-frame">
+    <img src="assets/09_confusion_matrix_logistic_regression.png" alt="Confusion matrix of Logistic Regression" />
+  </div>
+</div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Portfolio Value</h2>
+          <p>This project now reads like a proper cloud portfolio item rather than a notebook hidden on a laptop.</p>
+          <div class="portfolio-value">
+            <div class="portfolio-item"><strong>End-to-end AWS workflow:</strong> the project demonstrates preprocessing, model training, hyperparameter tuning, artifact handling, monitoring, and cloud-hosted presentation.</div>
+            <div class="portfolio-item"><strong>Public proof of execution:</strong> GitHub and AWS Amplify provide a visible delivery layer, while SageMaker screenshots and reported metrics prove the ML workflow actually ran.</div>
+            <div class="portfolio-item"><strong>Credible engineering judgment:</strong> the final model choice was based on held-out test performance, not on forcing the more complex cloud-trained model to win.</div>
+            <div class="portfolio-item"><strong>Professional narrative:</strong> the project now communicates architecture, results, limitations, deployment, and business relevance in one place.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="simulator">
+      <div class="container">
+        <div class="card">
+          <h2>Interactive Churn Pattern Simulator</h2>
+          <p>
+            This is an educational front-end simulator based on the project’s observed churn patterns. It is not a live SageMaker inference endpoint.
+            It exists to make the project interactive without pretending that a production prediction API was deployed.
+          </p>
+          <div class="sim-grid">
+            <div class="subgrid">
+              <div class="field-grid">
+                <label>
+                  Contract type
+                  <select id="contract">
+                    <option value="month">Month-to-month</option>
+                    <option value="one">One year</option>
+                    <option value="two">Two year</option>
+                  </select>
+                </label>
+                <label>
+                  Internet service
+                  <select id="internet">
+                    <option value="fiber">Fiber optic</option>
+                    <option value="dsl">DSL</option>
+                    <option value="none">No internet service</option>
+                  </select>
+                </label>
+                <label>
+                  Payment method
+                  <select id="payment">
+                    <option value="electronic">Electronic check</option>
+                    <option value="bank">Bank transfer / credit card</option>
+                    <option value="mailed">Mailed check</option>
+                  </select>
+                </label>
+                <label>
+                  Paperless billing
+                  <select id="paperless">
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </label>
+                <label>
+                  Tenure (months)
+                  <input id="tenure" type="range" min="0" max="72" value="12" />
+                  <span class="muted" id="tenureValue">12 months</span>
+                </label>
+                <label>
+                  Monthly charges
+                  <input id="charges" type="range" min="20" max="120" value="70" />
+                  <span class="muted" id="chargesValue">70</span>
+                </label>
+              </div>
+              <div class="button-row">
+                <button class="btn primary" id="simulateBtn">Update risk profile</button>
+              </div>
+            </div>
+            <div class="sim-output">
+              <div class="risk-box">
+                <div class="muted">Estimated churn risk pattern</div>
+                <div class="risk-score" id="riskScore">62%</div>
+                <div id="riskBand" class="warning">High risk pattern</div>
+                <div class="progress" style="margin-top:14px;"><div id="riskFill"></div></div>
+              </div>
+              <div class="insight-list" id="simInsights">
+                <div class="insight">Month-to-month contracts and fiber optic plans often appeared in higher-risk churn profiles.</div>
+                <div class="insight">Lower tenure and higher monthly charges tended to align with higher churn risk patterns.</div>
+                <div class="insight">Longer contracts generally reduced churn risk in the project dataset.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="links">
       <div class="container grid-3">
         <div class="card">
-          <h3>What was built</h3>
-          <p>Notebook-based preprocessing, baseline model training, SageMaker XGBoost training, tuning, artifact-based evaluation, and architecture documentation.</p>
-        </div>
-        <div class="card">
-          <h3>Why AWS was used</h3>
-          <p>To demonstrate a managed AI/ML ecosystem with cloud storage, managed training jobs, tuning jobs, logging, and reusable model artifacts.</p>
-        </div>
-        <div class="card">
-          <h3>What this site is for</h3>
-          <p>A project showcase page for GitHub and AWS hosting. It presents the work clearly without pretending the website itself is the ML system.</p>
-        </div>
-      </div>
-    </section>
-
-    <section id="contact">
-      <div class="container">
-        <div class="card">
-          <h2>Project Links</h2>
-          <p>Replace these placeholders before publishing.</p>
-          <div class="pill-list">
+          <h3>Project links</h3>
+          <div class="button-row">
             <a class="btn" href="https://github.com/AdithyaMM2/Churn-website" target="_blank">GitHub Repository</a>
-            <a class="btn" href="#">Project Report PDF</a>
-            <a class="btn" href="#">LinkedIn Post</a>
           </div>
+        </div>
+        <div class="card">
+          <h3>Live deployment</h3>
+          <p><strong>Amplify URL:</strong><br>https://main.d3cjze9lxmqc4u.amplifyapp.com/</p>
+          <p class="muted">Static site hosted on AWS Amplify. ML training and evaluation were performed separately in SageMaker.</p>
+        </div>
+        <div class="card">
+          <h3>Professional positioning</h3>
+          <p>This project demonstrates cloud ML workflow design, model benchmarking, documentation discipline, public delivery through GitHub, and AWS-hosted presentation through Amplify.</p>
         </div>
       </div>
     </section>
@@ -456,8 +776,117 @@
 
   <footer>
     <div class="container">
-      <p>Built as a CS5024 AI ecosystem project using Amazon SageMaker, Amazon S3, hyperparameter tuning, and cloud-based ML workflow design.</p>
+      <p>Built as a CS5024 AI ecosystem project using Amazon SageMaker, Amazon S3, CloudWatch, GitHub, and AWS Amplify.</p>
     </div>
   </footer>
+
+  <dialog id="architectureModal">
+    <div style="padding:18px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center; color:white;">
+      <strong>AWS Architecture Diagram</strong>
+      <button class="btn" id="closeArchitecture">Close</button>
+    </div>
+    <div style="padding:18px;">
+      <img src="assets/ARCHITECTURE_DIAGRAM.png" alt="Full AWS architecture diagram" style="width:100%; border-radius:16px; display:block;" />
+    </div>
+  </dialog>
+
+  <script>
+    const buttons = document.querySelectorAll('.tab-btn');
+    const panels = {
+      lr: document.getElementById('panel-lr'),
+      xgb: document.getElementById('panel-xgb'),
+      tuned: document.getElementById('panel-tuned')
+    };
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        Object.values(panels).forEach(p => p.classList.remove('active'));
+        panels[btn.dataset.model].classList.add('active');
+      });
+    });
+
+    const architectureModal = document.getElementById('architectureModal');
+    document.getElementById('openArchitecture').addEventListener('click', () => architectureModal.showModal());
+    document.getElementById('closeArchitecture').addEventListener('click', () => architectureModal.close());
+
+    const tenure = document.getElementById('tenure');
+    const charges = document.getElementById('charges');
+    const tenureValue = document.getElementById('tenureValue');
+    const chargesValue = document.getElementById('chargesValue');
+    const riskScore = document.getElementById('riskScore');
+    const riskBand = document.getElementById('riskBand');
+    const riskFill = document.getElementById('riskFill');
+    const simInsights = document.getElementById('simInsights');
+
+    function updateSliderLabels() {
+      tenureValue.textContent = `${tenure.value} months`;
+      chargesValue.textContent = charges.value;
+    }
+
+    tenure.addEventListener('input', updateSliderLabels);
+    charges.addEventListener('input', updateSliderLabels);
+    updateSliderLabels();
+
+    function simulateRisk() {
+      const contract = document.getElementById('contract').value;
+      const internet = document.getElementById('internet').value;
+      const payment = document.getElementById('payment').value;
+      const paperless = document.getElementById('paperless').value;
+      const t = Number(tenure.value);
+      const c = Number(charges.value);
+
+      let score = 30;
+      if (contract === 'month') score += 22;
+      if (contract === 'one') score += 4;
+      if (contract === 'two') score -= 12;
+
+      if (internet === 'fiber') score += 14;
+      if (internet === 'dsl') score += 4;
+      if (internet === 'none') score -= 10;
+
+      if (payment === 'electronic') score += 10;
+      if (payment === 'bank') score -= 3;
+      if (payment === 'mailed') score += 2;
+
+      if (paperless === 'yes') score += 5;
+      if (paperless === 'no') score -= 3;
+
+      if (t < 6) score += 18;
+      else if (t < 12) score += 10;
+      else if (t < 24) score += 4;
+      else if (t > 48) score -= 8;
+
+      if (c > 85) score += 9;
+      else if (c > 65) score += 4;
+      else if (c < 35) score -= 4;
+
+      score = Math.max(5, Math.min(95, score));
+      riskScore.textContent = `${score}%`;
+      riskFill.style.width = `${score}%`;
+
+      let band = 'Moderate risk pattern';
+      let cls = 'muted';
+      if (score >= 65) { band = 'High risk pattern'; cls = 'warning'; }
+      else if (score <= 35) { band = 'Lower risk pattern'; cls = 'winner'; }
+      riskBand.className = cls;
+      riskBand.textContent = band;
+
+      const insights = [];
+      if (contract === 'month') insights.push('Month-to-month contracts increased the risk score materially.');
+      if (internet === 'fiber') insights.push('Fiber optic service is treated as a stronger churn risk signal in this simulator.');
+      if (t < 12) insights.push('Low tenure sharply increases churn risk because newer customers are less stable.');
+      if (c > 85) insights.push('High monthly charges push the score upward.');
+      if (payment === 'electronic') insights.push('Electronic check is treated as a higher-risk payment pattern here.');
+      if (contract === 'two' && t > 24) insights.push('Longer contracts and longer tenure pull risk downward.');
+      if (insights.length === 0) insights.push('This profile looks relatively stable under the project’s simplified churn-pattern assumptions.');
+
+      simInsights.innerHTML = insights.slice(0, 3).map(text => `<div class="insight">${text}</div>`).join('');
+    }
+
+    document.getElementById('simulateBtn').addEventListener('click', simulateRisk);
+    simulateRisk();
+  </script>
 </body>
 </html>
